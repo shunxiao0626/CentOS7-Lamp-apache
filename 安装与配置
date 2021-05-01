@@ -1,0 +1,94 @@
+##进行源码安装方式，安装过程复杂，但学到更多
+##表示注释
+
+~#    cd /usr/local/src
+src#  wget https://mirrors.cnnic.cn/apache/httpd-2.4.46.tar.gz
+src#  https://mirrors.cnnic.cn/apache/apr/apr-1.6.5.tar.gz
+src#  https://mirrors.cnnic.cn/apache/apr-util-1.6.1.tar.gz
+##上面三个安装包在  http://mirrors.sohu.com/apache/apr/ 或 http://mirrors.tuna.tsinghua.edu.cn/apache/apr 下载，注意的是安装包不断更新，不可直接按CSDN上直接复制粘贴
+src#  tar -zxvf apr-1.6.5.tar.gz
+src#  tar -zxvf apr-util-1.6.1.tar.gz
+src#  tar -zxvf httpd-2.4.46.tar.gz
+src#  cd apr-1.6.5
+apr-1.6.5# ./configure  --prefix=/usr/local/apr
+apr-1.6.5# make && make install
+##如果此处出现了问题，最后几行出现MAKE[1]: Error 1 等等。。
+--------------------------------
+apr-1.6.5# grep "RM" configure
+##此时屏幕会显示$RM "cfgfile"
+apr-1.6.5# vi configure
+##有几千行，一直按PGON直到最后一页，然后按几下会发现PGUP会找到$RM "cfgfile",再注释，$RM "cfgfile"改成#$RM "cfgfile"
+--------------------------------
+#echo $?
+##输出为0，则安装成功
+
+apr-1.6.5# cd ../
+src#  chmod -R 777  apr-util-1.6.1
+src#  cd apr-util-1.6.1
+apr-util-1.6.1#  ./configure --prefix=/usr/local/apr-util --with-apr=/usr/local/apr
+apr-util-1.6.1#  make && make install
+####如果此处出现了问题，最后几行出现MAKE[1]: Error 1 等等。。
+-------------------------------
+apr-util-1.6.1#  yum -y install expat-devel
+##安装过程中，出现了Error downloading packages 
+apr-util-1.6.1#  mv /usr/bin/python /usr/bin/python2.7
+apr-util-1.6.1#  ln -s /usr/local/bin/python3.6 /usr/bin/python 
+apr-util-1.6.1#  vi /usr/bin/yum  
+
+##将文件头部的#!/usr/bin/python改成#!/usr/bin/python2.7
+
+apr-util-1.6.1#  vi /usr/libexec/urlgrabber-ext-down
+##将文件头部的#!/usr/bin/python改成#!/usr/bin/python2.7   ##CentOS7 默认Python是2.7
+-------------------------------
+apr-util-1.6.1#  yum -y install expat-devel             ##安装成功
+apr-util-1.6.1#  make && make install                   ##安装成功
+apr-util-1.6.1#  cd ../                                  
+src#  cd httpd-2.4.46
+httpd-2.4.46#  yum -y install pcre prce-devel
+httpd-2.4.46#  ./configure --prefix=/usr/local/apache --enable-so --enable-rewrite --with-apr=/usr/local/apr /
+               --with-apr-util=/usr/local/apr-util    --enable-mps-shared=all --enable-mpm=event /
+               --with-included-apr
+
+##如果出现了问题
+-------------------------------
+httpd-2.4.46# rm -rf Makefile
+httpd-2.4.46# cd ../
+src#  cp -r apr-1.6.5  ./httpd-2.4.46/src/srclib/apr
+src#  cp -r apr-util-1.6.1  ./httpd-2.4.46/src/srclib/apr-util
+src#  cd  httpd-2.4.46
+httpd-2.4.46# yum -y install apr-devel 
+httpd-2.4.46# yum -y install apr--util-devel 
+httpd-2.4.46# yum -y install pcre
+-------------------------------
+httpd-2.4.46# ./configure --prefix=/usr/local/apache --enable-so --enable-rewrite --with-apr=/usr/local/apr /
+               --with-apr-util=/usr/local/apr-util    --enable-mps-shared=all --enable-mpm=event /
+               --with-included-apr
+httpd-2.4.46#  make && make install
+httpd-2.4.46#  ls /usr/local/apache/      ##安装完，可以显示 bin  build  cgi-bin  conf  error  htdocs  icons  include  logs  man  manual  modules
+
+httpd-2.4.46#  /usr/local/apache/bin/apachectl -M
+httpd-2.4.46#  cd /usr/local/apache
+
+####如果此处出现了问题
+-----------------------------------
+##指示：  httpd: Could not open configuration file /xxx/conf/httpd.conf: No such file or directory
+apache#   ./apachectl -f /xxx/httpd/conf/httpd.conf -k start   ##路径要正确 
+
+
+##指示： /etc/httpd/httpd.conf: No such file or directory 
+apache#  mkdir /etc/httpd
+apache#  cp /usr/local/apache/conf/httpd.conf  /etc/httpd/httpd.conf
+-----------------------------------
+
+##启动apache
+apache# ./bin/apachectl start
+
+##查看httpd服务是否启动
+apache# ps aux | grep httpd
+apache# netstat -lntp
+##会出现一系列消息
+
+
+
+
+
